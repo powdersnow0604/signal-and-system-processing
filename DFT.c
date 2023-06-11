@@ -2,17 +2,16 @@
 #define _USE_MATH_DEFINES
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
-#include <Windows.h>
 #define window_size 2000     //data 개수
 
-void getdir(char* path, int choice);
 
-char path_res[MAX_PATH];
-char path[MAX_PATH];
+char path[260];
 int max = 0;
+int second = 0;
 
-int main(void)
+int main_DFT(void)
 {
 	FILE* file = fopen("sample1.snd", "r+b");
 	if (file == NULL)
@@ -40,19 +39,22 @@ int main(void)
 		transform[k] = sqrt(pow(sumA, 2) + pow(sumB, 2));
 	}
 
+
+
 	//finding freq with max amplitude
 	for (int i = 1; i <= window_size / 2; i++)
 	{
 		if (transform[i] > transform[max])
 		{
+			second = max;
 			max = i;
 		}
 	}
 	printf("\n[최대 크기 주파수: %lfHz,	크기: %lf]\n", (double)max * 8000 / window_size, transform[max]);
 
 	//plot
-	getdir(path_res, 0);
-	FILE* nfile = fopen(path_res, "w+");
+
+	FILE* nfile = fopen("DFTres.txt", "w+");
 	if (nfile == NULL)
 	{
 		perror("nfile error");
@@ -63,7 +65,14 @@ int main(void)
 	}
 	fclose(nfile);
 
-	getdir(path,1);
+	strcpy(path, "DFTplot.py ");
+	char buf[8];
+	strcat(path, _itoa(window_size, buf, 10));
+	strcat(path, " DFTres.txt ");
+	strcat(path, _itoa(max, buf, 10));
+	strcat(path, " ");
+	strcat(path, _itoa(second, buf, 10));
+
 	system(path);
 
 	//free
@@ -72,24 +81,3 @@ int main(void)
 	return 0;
 }
 
-void getdir(char* path, int choice)
-{
-	GetCurrentDirectoryA(MAX_PATH, path);
-	*strrchr(path, '\\') = '\0';
-	*strrchr(path, '\\') = '\0';
-	if (choice)
-	{
-		strcat(path, "\\DFTplot.py ");
-		char buf[8];
-		strcat(path, _itoa(window_size, buf, 10));
-		strcat(path, " ");
-		strcat(path, path_res);
-		strcat(path, " ");
-		strcat(path, _itoa(max, buf, 10));
-
-	}
-	else
-	{
-		strcat(path, "\\dftresult.txt ");
-	}
-}
