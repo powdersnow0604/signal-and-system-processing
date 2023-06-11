@@ -4,21 +4,15 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#define window_size 2187     //data 개수
-
-typedef struct {
-	double real;
-	double imaginary;
-}complex_num;
+#include "complex_num.h"
+#define window_size 2187     //data 개수  
+#define r 3					 //window_size에 해당하는 radix
 
 static complex_num* FFT(complex_num* P, int radix);
-static complex_num twiddle_factor(int N, int exp);
-static complex_num complexAdd(complex_num A, complex_num B);
-static complex_num complexMul(complex_num A, complex_num B);
 
 static char path[260];
 static int max = 0;
-
+static int second = 0;
 
 int main_FFT_radix_k(void)
 {
@@ -46,7 +40,7 @@ int main_FFT_radix_k(void)
 
 
 	//calc FFT
-	complex_num* FFTres = FFT(cxtypeData,3);
+	complex_num* FFTres = FFT(cxtypeData,r);
 
 
 	//calc amplitude
@@ -61,6 +55,7 @@ int main_FFT_radix_k(void)
 	{
 		if (amplitude[i] > amplitude[max])
 		{
+			second = max;
 			max = i;
 		}
 	}
@@ -84,6 +79,8 @@ int main_FFT_radix_k(void)
 	strcat(path, _itoa(window_size, buf, 10));
 	strcat(path, " DFTres.txt ");
 	strcat(path, _itoa(max, buf, 10));
+	strcat(path, " ");
+	strcat(path, _itoa(second, buf, 10));
 
 	system(path);
 
@@ -164,21 +161,3 @@ static complex_num* FFT(complex_num* P, int radix)
 	return FFTRes;
 }
 
-static complex_num complexAdd(complex_num A, complex_num B)
-{
-	complex_num res = { A.real + B.real, A.imaginary + B.imaginary };
-	return res;
-}
-
-static complex_num complexMul(complex_num A, complex_num B)
-{
-	complex_num res = { A.real * B.real - B.imaginary * A.imaginary, A.real * B.imaginary + A.imaginary * B.real };
-	return res;
-}
-
-static complex_num twiddle_factor(int N, int exp)
-{
-	complex_num t = { cos(2 * M_PI / N * exp), -1 * sin(2 * M_PI / N * exp) };
-	
-	return t;
-}
