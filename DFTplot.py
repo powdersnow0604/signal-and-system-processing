@@ -14,7 +14,7 @@ f, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, sharex=True)
 
 markers, stemlines, baselines = ax2.stem(x,d)
 markers.set_visible(False)
-ax2.set_ylim(0,150)
+ax2.set_ylim(0,int(sys.argv[4])*1.15)
 
 markers, stemlines, baselines = ax1.stem(x,d)
 markers.set_visible(False)
