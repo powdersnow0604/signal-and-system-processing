@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#define window_size 2000     //data °³¼ö
+#define window_size 2000     //data ê°œìˆ˜
 
 
 char path[260];
@@ -50,7 +50,7 @@ int main_DFT(void)
 			max = i;
 		}
 	}
-	printf("\n[ÃÖ´ë Å©±â ÁÖÆÄ¼ö: %lfHz,	Å©±â: %lf]\n", (double)max * 8000 / window_size, transform[max]);
+	printf("\n[ìµœëŒ€ í¬ê¸° ì£¼íŒŒìˆ˜: %lfHz,	í¬ê¸°: %lf]\n", (double)max * 8000 / window_size, transform[max]);
 
 	//plot
 
