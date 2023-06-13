@@ -5,8 +5,8 @@
 #include <math.h>
 
 typedef struct {
-	double real;
-	double imaginary;
+	double Re;
+	double Im;
 }complex_num;
 
 extern complex_num complexAdd(complex_num A, complex_num B);
