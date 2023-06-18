@@ -1,6 +1,8 @@
 #ifndef  __DFT_H__
 #define  __DFT_H__
 
+#undef SPEED
+
 #include "complex_num.h"
 #include "factorization.h"
 #include "plot.h"

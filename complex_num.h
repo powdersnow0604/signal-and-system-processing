@@ -15,8 +15,14 @@ extern complex_num complexMul(complex_num A, complex_num B);
 
 extern complex_num complexSub(complex_num A, complex_num B);
 
+extern double complexAbs(complex_num A);
+
+extern complex_num conjugate(complex_num A);
+
+extern double phaseAngle(complex_num A);
+
 extern complex_num twiddle_factor(int N, int exp);
 
-extern complex_num* data2complex(void* data, size_t size, char datatype[]);
+extern complex_num* data2complex(void* data, size_t size, size_t type);
 
 #endif

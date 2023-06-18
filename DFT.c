@@ -2,7 +2,7 @@
 #include <malloc.h>
 #include <errno.h>
 
-//////////////////    선언부    //////////////////////////////
+/*------------------선언부-------------------*/
 
 static void OnShuffle(complex_num* X, int N, int log2N);
 static int OnReverseBitOrder(int index, int LOG2N);
@@ -13,10 +13,10 @@ static void OnButterfly_radix_2(complex_num* P, int n,int mode);
 static void OnButterfly_radix_k(complex_num* P, int n, int radix, complex_num* temp, int mode);
 static void OnButterfly_common_factor(complex_num* P, int N, complex_num* temp, int mode);
 
-//////////////////    정의부    //////////////////////////////
+/*------------------정의부-------------------*/
 
 
-//////// [suffle] ///////
+/*			[suffle]		*/
 static void OnShuffle(complex_num* X, int N, int log2N)
 {
 	int i;
@@ -65,7 +65,7 @@ static int LOG2N(int Num)
 static void relocate(complex_num* X, int N, int radix, complex_num* temp)
 {
 	int i, j, pos;
-
+	
 	for (i = 0; i < N; i += radix) {
 		pos = i / radix;
 		for (j = 0; j < radix; j++) {
@@ -80,25 +80,22 @@ static void relocate(complex_num* X, int N, int radix, complex_num* temp)
 	}
 
 }
-/////////////////////////
+//////////////////////////////
 
 
-//////// [usable] ///////
+/*			[usable]		*/
 void DFT_1d(complex_num* X)
 {
 	int i, k, n,N;
-	if ((N = (int)sizeof(X)) == 8)	N = (int)(_msize(X) / sizeof(complex_num));
-	else N /= (int)sizeof(complex_num);
-
+	N = (int)(_msize(X) / sizeof(complex_num));
 	
-	complex_num* temp = (complex_num*)malloc(sizeof(complex_num) * N);
+	complex_num* temp = (complex_num*)calloc(N,sizeof(complex_num));
 
 	for (k = 0; k < N; k++)
 	{
 		for (n = 0; n < N; n++)
 		{
-			temp[k].Re += X[n].Re * cos(2 * M_PI / N * (k * n % N));
-			temp[k].Im += X[n].Re * -1 * sin(2 * M_PI / N * (k * n % N));
+			temp[k] = complexAdd(temp[k], complexMul(X[n], twiddle_factor(N, k * n % N)));
 		}
 	}
 
@@ -119,7 +116,7 @@ double* calcAmplitude(complex_num* X)
 	double* temp = (double*)malloc(sizeof(double) * N);
 
 	for (i = 0; i < N; i++) {
-		temp[i] = sqrt(X[i].Re * X[i].Re + X[i].Im * X[i].Im);
+		temp[i] = complexAbs(X[i]);
 	}
 
 	return temp;
@@ -129,8 +126,7 @@ void FFT_radix_2(complex_num* P)
 {
 	int N,log2N;
 
-	if ((N = (int)sizeof(P)) == 8)	N = (int)(_msize(P) / sizeof(complex_num));
-	else N /= (int)sizeof(complex_num);
+	N = (int)(_msize(P) / sizeof(complex_num));
 
 	log2N = LOG2N(N);
 
@@ -145,8 +141,7 @@ void FFT_radix_k(complex_num* P)
 {
 	int N, radix;
 
-	if ((N = (int)sizeof(P)) == 8)	N = (int)(_msize(P) / sizeof(complex_num));
-	else N /= (int)sizeof(complex_num);
+	N = (int)(_msize(P) / sizeof(complex_num));
 
 	radix = minFactor(N);
 
@@ -164,12 +159,12 @@ void FFT_common_factor(complex_num* P)
 	int N;
 	int cnt;
 
-	if ((N = (int)sizeof(P)) == 8)	N = (int)(_msize(P) / sizeof(complex_num));
-	else N /= (int)sizeof(complex_num);
+	N = (int)(_msize(P) / sizeof(complex_num));
 
 	if (N == minFactor(N)) cnt = 2 * N;
-	else cnt = (int)pow(N, 1.5);
+	else cnt = N+(int)sqrt(N);
 
+#ifdef SPEED
 	complex_num* temp = (complex_num*)malloc(sizeof(complex_num) * cnt);
 
 	if (temp == NULL) return;
@@ -177,14 +172,16 @@ void FFT_common_factor(complex_num* P)
 	OnButterfly_common_factor(P, N, temp,0);
 
 	free(temp);
+#else
+	OnButterfly_common_factor(P, N, NULL, 0);
+#endif
 }
 
 void IFFT_radix_2(complex_num* P)
 {
 	int i,N,log2N;
 
-	if ((N = (int)sizeof(P)) == 8)	N = (int)(_msize(P) / sizeof(complex_num));
-	else N /= (int)sizeof(complex_num);
+	N = (int)(_msize(P) / sizeof(complex_num));
 
 	log2N = LOG2N(N);
 
@@ -201,8 +198,7 @@ void IFFT_radix_k(complex_num* P)
 {
 	int i,N,radix;
 
-	if ((N = (int)sizeof(P)) == 8)	N = (int)(_msize(P) / sizeof(complex_num));
-	else N /= (int)sizeof(complex_num);
+	N = (int)(_msize(P) / sizeof(complex_num));
 
 	radix = minFactor(N);
 
@@ -225,12 +221,11 @@ void IFFT_common_factor(complex_num* P)
 	int i,N;
 	int cnt;
 
-	if ((N = (int)sizeof(P)) == 8)	N = (int)(_msize(P) / sizeof(complex_num));
-	else N /= (int)sizeof(complex_num);
+	N = (int)(_msize(P) / sizeof(complex_num));
 
 	if (N == minFactor(N)) cnt = 2 * N;
-	else cnt = (int)pow(N, 1.5);
-
+	else cnt = N + (int)sqrt(N);;
+#ifdef SPEED
 	complex_num* temp = (complex_num*)malloc(sizeof(complex_num) * cnt);
 
 	if (temp == NULL) return;
@@ -238,16 +233,19 @@ void IFFT_common_factor(complex_num* P)
 	OnButterfly_common_factor(P, N, temp, 1);
 
 	free(temp);
-	
+#else
+	OnButterfly_common_factor(P, N, NULL, 1);
+#endif
+
 	for (i = 0; i < N; i++) {
 		P[i].Re /= N;
 		P[i].Im /= N;
 	}
 }
-//////////////////////////
+///////////////////////////////
 
 
-//////// [butterfly] /////
+/*			[butterfly]			*/
 static void OnButterfly_radix_2(complex_num* P, int n, int mode)
 {
 	if (n == 1)
@@ -318,15 +316,24 @@ static void OnButterfly_common_factor(complex_num* P, int N, complex_num* temp, 
 	//setting
 	if (N == 1)
 		return;
-	
+
 	int i,j,k,radix = minFactor(N);
+
+	#ifndef SPEED
+	temp = (complex_num*)malloc(sizeof(complex_num) * (N + radix));
+	#endif
 
 	relocate(P, N, radix, temp);
 
 	//decompose
 	for (i = 0; i < radix; i++)
 	{
+	#ifdef SPEED
 		OnButterfly_common_factor(P + N / radix * i, N / radix, temp,mode);
+	#else
+		OnButterfly_common_factor(P + N / radix * i, N / radix, NULL, mode);
+	#endif
+
 	}
 
 	//conquer
@@ -356,5 +363,8 @@ static void OnButterfly_common_factor(complex_num* P, int N, complex_num* temp, 
 			}
 		}
 	}
+	#ifndef SPEED
+		free(temp); 
+	#endif
 }
-//////////////////////////
+///////////////////////////////////
