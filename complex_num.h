@@ -9,20 +9,22 @@ typedef struct {
 	double Im;
 }complex_num;
 
-extern complex_num complexAdd(complex_num A, complex_num B);
+extern inline complex_num complexAdd(complex_num A, complex_num B);
 
-extern complex_num complexMul(complex_num A, complex_num B);
+extern inline complex_num complexMul(complex_num A, complex_num B);
 
-extern complex_num complexSub(complex_num A, complex_num B);
+extern inline complex_num complexSub(complex_num A, complex_num B);
 
-extern double complexAbs(complex_num A);
+extern inline double complexAbs(complex_num A);
 
-extern complex_num conjugate(complex_num A);
+extern inline complex_num conjugate(complex_num A);
 
-extern double phaseAngle(complex_num A);
+extern inline double phaseAngle(complex_num A);
 
-extern complex_num twiddle_factor(int N, int exp);
+extern inline complex_num twiddle_factor(int N, int exp);
 
-extern complex_num* data2complex(void* data, size_t size, size_t type);
+extern complex_num* data2complex(void* data, size_t size, char datatype[]);
+
+extern const complex_num I;
 
 #endif

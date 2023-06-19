@@ -2,6 +2,10 @@
 #include <malloc.h>
 #include "string.h"
 
+extern const complex_num I = { 0,1 };
+
+static int hash_for_type(char type[]);
+
 complex_num complexAdd(complex_num A, complex_num B)
 {
 	complex_num res = { A.Re + B.Re, A.Im + B.Im };
@@ -43,40 +47,64 @@ complex_num twiddle_factor(int N, int exp)
 	return t;
 }
 
-complex_num* data2complex(void* data, size_t size, size_t type)
+complex_num* data2complex(void* data, size_t size, char datatype[])
 {
 	//동적 할당 반환
 	complex_num* cxtypeData = (complex_num*)malloc(sizeof(complex_num) * size);
-	switch (type)
+	switch (hash_for_type(datatype))
 	{
-	case 1: {
+	case 414: {
 		for (int i = 0; i < size; i++)
 		{
-			*(((long long*)cxtypeData)+i*2) = ((char*)data)[i];
+			cxtypeData[i].Re = ((char*)data)[i];
 			cxtypeData[i].Im = 0;
 		}
 		break;
 	}
-	case 2: {
+	case 560: {
 		for (int i = 0; i < size; i++)
 		{
-			*(((long long*)cxtypeData) + i*2) = ((short*)data)[i];
+			cxtypeData[i].Re = ((short*)data)[i];
 			cxtypeData[i].Im = 0;
 		}
 		break;
 	}
-	case 4: {
+	case 331: {
 		for (int i = 0; i < size; i++)
 		{
-			*(((long long*)cxtypeData) + i*2) = ((int*)data)[i];
+			cxtypeData[i].Re = ((int*)data)[i];
 			cxtypeData[i].Im = 0;
 		}
 		break;
 	}
-	case 8: {
+	case 432: {
 		for (int i = 0; i < size; i++)
 		{
-			*(((long long*)cxtypeData) + i*2) = ((long long*)data)[i];
+			cxtypeData[i].Re = ((long*)data)[i];
+			cxtypeData[i].Im = 0;
+		}
+		break;
+	}
+	case 534: {
+		for (int i = 0; i < size; i++)
+		{
+			cxtypeData[i].Re = ((float*)data)[i];
+			cxtypeData[i].Im = 0;
+		}
+		break;
+	}
+	case 635: {
+		for (int i = 0; i < size; i++)
+		{
+			cxtypeData[i].Re = ((double*)data)[i];
+			cxtypeData[i].Im = 0;
+		}
+		break;
+	}
+	case 896: {
+		for (int i = 0; i < size; i++)
+		{
+			cxtypeData[i].Re = (double)(((long long*)data)[i]);
 			cxtypeData[i].Im = 0;
 		}
 		break;
@@ -87,4 +115,15 @@ complex_num* data2complex(void* data, size_t size, size_t type)
 
 	return cxtypeData;
 
+}
+
+static int hash_for_type(char type[])
+{
+	int len = (int)strlen(type);
+	int sum = 0;
+	for (int i = 0; i < len; i++)
+	{
+		sum += type[i];
+	}
+	return sum;
 }
