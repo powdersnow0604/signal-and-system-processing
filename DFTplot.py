@@ -26,11 +26,14 @@ if(d[second] < d[first]*0.85 and d[second] != 0):
 
     markers, stemlines, baselines = ax2.stem(x,d)
     markers.set_visible(False)
-    ax2.set_ylim(0,second*1.15)
+    ax2.set_ylim(0,d[second]*1.15)
+    ax2.set_xlim(0,samplingRate)
 
     markers, stemlines, baselines = ax1.stem(x,d)
     markers.set_visible(False)
     ax1.set_ylim(int(d[first]*0.85),int(d[first]*1.15))
+    ax1.set_xlim(0,samplingRate)
+
 
     d = .7
     kwargs = dict(marker=[(-1,-d), (1,d)], markersize=15, linestyle = 'none', color='k', clip_on=False)
@@ -53,5 +56,6 @@ else:
     plt.xlabel('frequency(Hz)')
     plt.ylabel('spectrum')
     plt.title('DFT')
+    plt.xlim(0,samplingRate)
     plt.ylim(0,d[first]*1.15)
     plt.show()
