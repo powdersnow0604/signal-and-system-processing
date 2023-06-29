@@ -1,15 +1,16 @@
 #include "DFT.h"
 #include <malloc.h>
 #include <errno.h>
+#include <stdio.h>
 
 /*------------------¼±¾ðºÎ-------------------*/
 
 static void OnShuffle(complex_num* X, int N, int log2N);
-static void OnShuffle_4(complex_num* X, int N);
-static int OnReverseBitOrder(int index, int LOG2N);
-static void relocate(complex_num* X, int N, int radix, complex_num* temp);
-static inline int LOG2N(int Num);
-
+static void OnShuffle_4(complex_num* X, int N, int log2N);
+static void OnShuffle_4_old(complex_num* X, int N, int log2N);
+static inline int OnReverseBitOrder(int index, int LOG2N);
+static inline void relocate(complex_num* X, int N, int radix, complex_num* temp);
+static inline int OnReverseBitOrder4(int x, int log2N);
 static void OnButterfly_radix_2(complex_num* P, int n,int mode);
 static void OnButterfly_radix_4(complex_num* P, int n, int mode);
 #pragma region OnButterfly_radix_k
@@ -45,27 +46,59 @@ static void OnShuffle(complex_num* X, int N, int log2N)
 	free(temp);
 }
 
-static void OnShuffle_4(complex_num* X, int N)
+static void OnShuffle_4(complex_num* X, int N, int log2N)
+{
+	int i;
+	complex_num* temp = (complex_num*)malloc(sizeof(complex_num) * N);
+
+	if (temp == NULL) return;
+
+	for (i = 0; i < N; i++) {
+		temp[i].Re = X[OnReverseBitOrder4(i, log2N)].Re;
+		temp[i].Im = X[OnReverseBitOrder4(i, log2N)].Im;
+	}
+
+	for (i = 0; i < N; i++) {
+		X[i].Re = temp[i].Re;
+		X[i].Im = temp[i].Im;
+	}
+
+	free(temp);
+}
+
+static void OnShuffle_4_old(complex_num* X, int N, int log2N)
 {
 	int i, j;
 	complex_num* temp = (complex_num*)malloc(sizeof(complex_num) * N);
 
+	if (temp == NULL) return;
+	
+	for (i = 0; i < N; i++) {
+		temp[i].Re = X[OnReverseBitOrder(i, log2N)].Re;
+		temp[i].Im = X[OnReverseBitOrder(i, log2N)].Im;
+	}
+
+	for (i = 0; i < N; i++) {
+		X[i].Re = temp[i].Re;
+		X[i].Im = temp[i].Im;
+	}
+	
 	for (i = N; i > 1; i /= 4)
 	{
 		memcpy(temp, X, N * sizeof(complex_num));
 		for (j = 0; j < N; j += i)
 		{
-			memcpy(X + j,           temp + j,         i / 4 * sizeof(complex_num));
-			memcpy(X + j + i / 4,   temp + j + i/4*2, i / 4 * sizeof(complex_num));
-			memcpy(X + j + i / 4*2, temp + j + i/4,   i / 4 * sizeof(complex_num));
-			memcpy(X + j + i / 4*3, temp + j + i/4*3, i / 4 * sizeof(complex_num));
+			memcpy(X + j, temp + j, i / 4 * sizeof(complex_num));
+			memcpy(X + j + i / 4, temp + j + i / 4 * 2, i / 4 * sizeof(complex_num));
+			memcpy(X + j + i / 4 * 2, temp + j + i / 4, i / 4 * sizeof(complex_num));
+			memcpy(X + j + i / 4 * 3, temp + j + i / 4 * 3, i / 4 * sizeof(complex_num));
 
 		}
 	}
 	free(temp);
 }
 
-static int OnReverseBitOrder(int index, int LOG2N)
+static inline int OnReverseBitOrder(int index, int LOG2N)
 {
 	int i, X, Y = 0;
 
@@ -73,16 +106,21 @@ static int OnReverseBitOrder(int index, int LOG2N)
 		X = (index & (1 << i)) >> i;
 		Y = (Y << 1) | X;
 	}
-
 	return Y;
 }
 
-static inline int LOG2N(int Num)
+static inline int OnReverseBitOrder4(int index, int log2N)
 {
-	return (int)(log(Num) / log(2));
+	int i, X, Y = 0;
+
+	for (i = 0; i < log2N; i+=2) {
+		X = (index & (3 << i)) >> i;
+		Y = (Y << 2) | X;
+	}
+	return Y;
 }
 
-static void relocate(complex_num* X, int N, int radix, complex_num* temp)
+static inline void relocate(complex_num* X, int N, int radix, complex_num* temp)
 {
 	int i, j, pos, N_radix = N / radix;
 	
@@ -149,7 +187,7 @@ void FFT_radix_2(complex_num* P)
 
 	N = (int)(_msize(P) / sizeof(complex_num));
 
-	OnShuffle(P, N, LOG2N(N));
+	OnShuffle(P, N, (int)log2(N));
 
 	if (errno == ENOMEM) return;
 
@@ -162,7 +200,7 @@ void IFFT_radix_2(complex_num* P)
 
 	N = (int)(_msize(P) / sizeof(complex_num));
 
-	OnShuffle(P, N, LOG2N(N));
+	OnShuffle(P, N, (int)log2(N));
 
 	if (errno == ENOMEM) return;
 
@@ -182,8 +220,7 @@ void FFT_radix_4(complex_num* P)
 
 	N = (int)(_msize(P) / sizeof(complex_num));
 
-	OnShuffle(P, N, LOG2N(N));
-	OnShuffle_4(P, N);
+	OnShuffle_4(P, N, (int)log2(N));
 	
 	if (errno == ENOMEM) return;
 
@@ -196,8 +233,7 @@ void IFFT_radix_4(complex_num* P)
 
 	N = (int)(_msize(P) / sizeof(complex_num));
 
-	OnShuffle(P, N, LOG2N(N));
-	OnShuffle_4(P, N);
+	OnShuffle_4(P, N, (int)log2(N));
 
 	if (errno == ENOMEM) return;
 
