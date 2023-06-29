@@ -8,9 +8,9 @@
 static void OnShuffle(complex_num* X, int N, int log2N);
 static void OnShuffle_4(complex_num* X, int N, int log2N);
 static void OnShuffle_4_old(complex_num* X, int N, int log2N);
-static inline int OnReverseBitOrder(int index, int LOG2N);
-static inline void relocate(complex_num* X, int N, int radix, complex_num* temp);
-static inline int OnReverseBitOrder4(int x, int log2N);
+static int OnReverseBitOrder(int index, int LOG2N);
+static void relocate(complex_num* X, int N, int radix, complex_num* temp);
+static int OnReverseBitOrder4(int x, int log2N);
 static void OnButterfly_radix_2(complex_num* P, int n,int mode);
 static void OnButterfly_radix_4(complex_num* P, int n, int mode);
 #pragma region OnButterfly_radix_k
@@ -98,7 +98,7 @@ static void OnShuffle_4_old(complex_num* X, int N, int log2N)
 	free(temp);
 }
 
-static inline int OnReverseBitOrder(int index, int LOG2N)
+static int OnReverseBitOrder(int index, int LOG2N)
 {
 	int i, X, Y = 0;
 
@@ -109,7 +109,7 @@ static inline int OnReverseBitOrder(int index, int LOG2N)
 	return Y;
 }
 
-static inline int OnReverseBitOrder4(int index, int log2N)
+static int OnReverseBitOrder4(int index, int log2N)
 {
 	int i, X, Y = 0;
 
@@ -120,7 +120,7 @@ static inline int OnReverseBitOrder4(int index, int log2N)
 	return Y;
 }
 
-static inline void relocate(complex_num* X, int N, int radix, complex_num* temp)
+static void relocate(complex_num* X, int N, int radix, complex_num* temp)
 {
 	int i, j, pos, N_radix = N / radix;
 	
