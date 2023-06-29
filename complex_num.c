@@ -24,9 +24,20 @@ complex_num complexSub(complex_num A, complex_num B)
 	return res;
 }
 
+complex_num complexDiv(complex_num A, complex_num B)
+{
+	complex_num temp = complexMul(A, conjugate(B));
+	double denom = complexAbs(B);
+	denom *= denom;
+	temp.Im /= denom;
+	temp.Re /= denom;
+	return temp;
+}
+
 double complexAbs(complex_num A)
 {
-	return sqrt(A.Im * A.Im + A.Re * A.Re);
+	//return sqrt(A.Im * A.Im + A.Re * A.Re);
+	return hypot(A.Re, A.Im);
 }
 
 complex_num conjugate(complex_num A)
@@ -115,6 +126,20 @@ complex_num* data2complex(void* data, size_t size, char datatype[])
 
 	return cxtypeData;
 
+}
+
+complex_num* mkCdata(size_t size, double (*func)(int))
+{
+	complex_num* data = (complex_num*)malloc(sizeof(complex_num) * size);
+
+	int i;
+	for (i = 0; i < size; i++)
+	{
+		data[i].Re = (*func)(i);
+		data[i].Im = 0;
+	}
+
+	return data;
 }
 
 static int hash_for_type(char type[])
