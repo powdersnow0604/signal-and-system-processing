@@ -6,57 +6,21 @@ extern const complex_num I = { 0,1 };
 
 static int hash_for_type(char type[]);
 
-complex_num complexAdd(complex_num A, complex_num B)
-{
-	complex_num res = { A.Re + B.Re, A.Im + B.Im };
-	return res;
-}
+extern inline complex_num complexAdd(complex_num A, complex_num B);
 
-complex_num complexMul(complex_num A, complex_num B)
-{
-	complex_num res = { A.Re * B.Re - B.Im * A.Im, A.Re * B.Im + A.Im * B.Re };
-	return res;
-}
+extern inline complex_num complexMul(complex_num A, complex_num B);
 
-complex_num complexSub(complex_num A, complex_num B)
-{
-	complex_num res = { A.Re - B.Re, A.Im - B.Im };
-	return res;
-}
+extern inline complex_num complexSub(complex_num A, complex_num B);
 
-complex_num complexDiv(complex_num A, complex_num B)
-{
-	complex_num temp = complexMul(A, conjugate(B));
-	double denom = complexAbs(B);
-	denom *= denom;
-	temp.Im /= denom;
-	temp.Re /= denom;
-	return temp;
-}
+extern inline complex_num complexDiv(complex_num A, complex_num B);
 
-double complexAbs(complex_num A)
-{
-	//return sqrt(A.Im * A.Im + A.Re * A.Re);
-	return hypot(A.Re, A.Im);
-}
+extern inline double complexAbs(complex_num A);
 
-complex_num conjugate(complex_num A)
-{
-	complex_num temp = { A.Re,A.Im * -1 };
-	return temp;
-}
+extern inline complex_num conjugate(complex_num A);
 
-double phaseAngle(complex_num A)
-{
-	return atan2(A.Im, A.Re);
-}
+extern inline double phaseAngle(complex_num A);
 
-complex_num twiddle_factor(int N, int exp)
-{
-	complex_num t = { cos(2 * M_PI / N * exp), -1 * sin(2 * M_PI / N * exp) };
-
-	return t;
-}
+extern inline complex_num twiddle_factor(int N, int exp);
 
 complex_num* data2complex(void* data, size_t size, char datatype[])
 {
